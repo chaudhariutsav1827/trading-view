@@ -1,0 +1,51 @@
+header {
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+}
+
+.logo {
+  font-family: 'Space Mono', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+
+.ticker {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ticker-name {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.price-badge {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(0, 212, 170, 0.1);
+  color: var(--green);
+  border: 1px solid rgba(0, 212, 170, 0.2);
+}
+
+.ohlc-bar {
+  display: flex;
+  gap: 20px;
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-family: 'Space Mono', monospace;
+}
+
+.ohlc-bar span b {
+  color: var(--text);
+}

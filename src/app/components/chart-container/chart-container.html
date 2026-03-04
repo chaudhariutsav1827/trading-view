@@ -1,0 +1,28 @@
+<div class="chart-wrapper">
+  <div class="chart-controls">
+    @for (timeframe of timeFrameOptions; track timeframe.value) {
+      <button
+        class="btn"
+        [class.active]="timeframe.value === settingsStore.getTimeframe().value"
+        (click)="onTimeframeChange(timeframe)"
+      >
+        {{ timeframe.label }}
+      </button>
+    }
+    <span style="flex: 1"></span>
+    <span style="font-size: 0.72rem; color: var(--muted); font-family: 'Space Mono', monospace"
+      >← Scroll to load more →</span
+    >
+  </div>
+
+  <div #chartContainer id="chart-container" (mousedown)="onMouseDown()" (mouseup)="onMouseUp()">
+    @if (loaderStore.loader$()) {
+      <div class="loading-indicator" id="loader">⟳ Loading more candles…</div>
+    }
+  </div>
+
+  <div class="status-bar">
+    <span><span class="dot"></span>Live simulation</span>
+    <span id="candle-count">{{ totalCandles() }} candles loaded</span>
+  </div>
+</div>

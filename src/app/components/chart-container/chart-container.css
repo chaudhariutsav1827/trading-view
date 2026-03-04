@@ -1,0 +1,93 @@
+:host {
+  display: contents;
+}
+
+.chart-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 28px;
+  gap: 12px;
+}
+
+.chart-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  padding: 5px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn:hover,
+.btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(0, 212, 170, 0.06);
+}
+
+#chart-container {
+  flex: 1;
+  min-height: 520px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  position: relative;
+}
+
+.loading-indicator {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 212, 170, 0.15);
+  border: 1px solid rgba(0, 212, 170, 0.3);
+  color: var(--accent);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  padding: 4px 14px;
+  border-radius: 20px;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.2s;
+  z-index: 10;
+}
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-family: 'Space Mono', monospace;
+  padding: 0 2px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: inline-block;
+  margin-right: 6px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}

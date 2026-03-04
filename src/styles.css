@@ -1,3 +1,32 @@
 /* You can add global styles to this file, and also import other style files */
 
-@import "tailwindcss";
+@import 'tailwindcss';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #0d0f14;
+  --surface: #13161e;
+  --border: #1f2330;
+  --accent: #00d4aa;
+  --accent2: #f7931a;
+  --red: #ff4757;
+  --green: #00d4aa;
+  --text: #e8ecf0;
+  --muted: #5a6070;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
