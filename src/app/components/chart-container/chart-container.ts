@@ -20,10 +20,12 @@ import { SeriesStore } from '@state/series/series-store';
 import { SeriesType } from '@core/constants/enums';
 import { LoaderStore } from '@state/loader/loader-store';
 import { ChartService } from '@services/chart-service';
+import { ChartLegends } from '../chart-legends/chart-legends';
+import { LegendService } from '@services/legend-service';
 
 @Component({
   selector: 'app-chart-container',
-  imports: [],
+  imports: [ChartLegends],
   templateUrl: './chart-container.html',
   styleUrl: './chart-container.css',
   standalone: true,
@@ -32,7 +34,7 @@ import { ChartService } from '@services/chart-service';
 export class ChartContainer implements AfterViewInit, OnDestroy {
   chartContainer = viewChild<ElementRef | null>('chartContainer');
   timeFrameOptions = TIMEFRAME_OPTIONS;
-  totalCandles = signal(0);
+  totalCandles = signal<number>(0);
 
   #chartApi: IChartApi | null = null;
   #isDragging = false;
@@ -46,10 +48,11 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
   constructor(
     protected settingsStore: SettingsStore,
     protected loaderStore: LoaderStore,
-    private seriesStore: SeriesStore,
+    protected seriesStore: SeriesStore,
     private helperService: HelperService,
     private chartService: ChartService,
     private chartRepository: ChartRepository,
+    private legendService: LegendService,
   ) {}
   //#endregion
 
@@ -104,6 +107,13 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
       }, RANGE_IDLE_DELAY);
     });
   }
+
+  #subscribeToCrosshairMove() {
+    this.#chartApi?.subscribeCrosshairMove((param) => {
+      if (!param) return;
+      this.legendService.updateLegendValues(param);
+    });
+  }
   //#endregion
 
   //#region private methods
@@ -115,8 +125,10 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
     const container = this.chartContainer()?.nativeElement;
     this.#chartApi = createChart(container, CHART_OPTIONS);
     this.#addSerieses();
+    this.#updateLegends();
     this.#getChartData();
     this.#subscribeToChartTimeScale();
+    this.#subscribeToCrosshairMove();
   }
 
   #getChartData(isForwardLoading: boolean = false) {
@@ -225,16 +237,43 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
   }
 
   #addSerieses() {
+    const mainChartPane = this.seriesStore
+      .series$()
+      .series.find((s) => s.type === SeriesType.CANDLE || s.type === SeriesType.HeikinAshi)?.pane;
+
     this.seriesStore.series$().series.forEach((s) => {
       const seriesType = this.helperService.getSeriesType(s.type);
-      const isCustomSeries = s.name.toLowerCase() === 'macd';
-      let seriesApi;
-      if (isCustomSeries) {
-        seriesApi = this.#chartApi?.addCustomSeries(new (seriesType as any)(), s.options, s.pane);
-      } else {
-        seriesApi = this.#chartApi?.addSeries(seriesType as any, s.options, s.pane);
+      const isCustomSeries = this.helperService.isCustomSeries(s.name);
+
+      switch (s.type) {
+        case SeriesType.VOLUME:
+          if (s.pane === mainChartPane) {
+            s.options = {
+              ...s.options,
+              priceScaleId: '',
+            };
+          }
+          break;
+        default:
+          break;
       }
+
+      const seriesApi = this.#addSeries(seriesType, s.options, s.pane, isCustomSeries);
       s.api = seriesApi;
+    });
+  }
+
+  #addSeries(seriesType: any, options: any, pane: number, isCustom: boolean) {
+    if (isCustom) {
+      return this.#chartApi?.addCustomSeries(new (seriesType as any)(), options, pane);
+    }
+    return this.#chartApi?.addSeries(seriesType as any, options, pane);
+  }
+
+  #updateLegends() {
+    requestAnimationFrame(() => {
+      this.legendService.updateSeriesApi();
+      this.legendService.updatePanePositions(this.chartContainer()?.nativeElement);
     });
   }
 

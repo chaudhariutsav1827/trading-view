@@ -1,3 +1,4 @@
+import { signal, WritableSignal } from '@angular/core';
 import { SeriesType } from '@core/constants/enums';
 
 export interface SeriesModel {
@@ -8,6 +9,7 @@ export interface SeriesModel {
   pane: number;
   params?: any;
   options?: any;
+  value: WritableSignal<object>;
 }
 
 export interface SeriesState {
@@ -29,14 +31,25 @@ export const DEFAULT_SERIES: SeriesState = {
         wickUpColor: '#00d4aa',
         wickDownColor: '#ff4757',
       },
+      value: signal({}),
     },
     {
       id: 2,
       name: 'Volume',
       type: SeriesType.VOLUME,
       pane: 1,
-      options: {},
+      options: {
+        priceFormat: {
+          type: 'volume',
+        },
+        scaleMargins: {
+          top: 0.8,
+          bottom: 0,
+        },
+        lastValueVisible: false,
+      },
       params: {},
+      value: signal({}),
     },
     {
       id: 3,
@@ -54,6 +67,7 @@ export const DEFAULT_SERIES: SeriesState = {
         signalPeriods: 9,
         slowPeriods: 26,
       },
+      value: signal({}),
     },
   ],
 };

@@ -63,4 +63,32 @@ export class HelperService {
         return LineSeries;
     }
   }
+
+  /**
+   * Check if series is custom
+   * @param name
+   * @returns
+   */
+  isCustomSeries(name: string): boolean {
+    const customSeries = [
+      'macd',
+      'ema',
+      'bb',
+      'rsi',
+      'ichimoku',
+      'wt',
+      'rs',
+      'vwap',
+      'adx',
+      'st',
+      'oi',
+      'iv',
+      'delta',
+      'gamma',
+      'theta',
+      'vega',
+      'rho',
+    ];
+    return customSeries.includes(name.toLowerCase());
+  }
 }

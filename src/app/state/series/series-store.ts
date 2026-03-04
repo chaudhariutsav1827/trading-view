@@ -25,7 +25,7 @@ export class SeriesStore {
 
   #saveSeries() {
     const seriesList = this.series$().series.map((s) => {
-      const { api, ...series } = s;
+      const { api, value, ...series } = s;
       return series;
     });
     const state = { series: seriesList };
