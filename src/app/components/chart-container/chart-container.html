@@ -19,6 +19,7 @@
     @if (loaderStore.loader$()) {
       <div class="loading-indicator" id="loader">⟳ Loading more candles…</div>
     }
+    <app-chart-legends [chartContainer]="chartContainer" />
   </div>
 
   <div class="status-bar">
