@@ -1,5 +1,5 @@
 import { effect, Injectable, signal } from '@angular/core';
-import { DEFAULT_SERIES, SeriesState } from './series-model';
+import { DEFAULT_SERIES, SeriesModel, SeriesState } from './series-model';
 
 @Injectable({
   providedIn: 'root',
@@ -18,9 +18,14 @@ export class SeriesStore {
 
   #loadSeries() {
     const series = localStorage.getItem('series');
-    if (series) {
-      this.series.set(JSON.parse(series));
-    }
+    const parsedSeries = series ? JSON.parse(series) : DEFAULT_SERIES;
+
+    // adding value signal for legends to each series
+    parsedSeries.series.forEach((s: SeriesModel) => {
+      s.value = signal({});
+    });
+
+    this.series.set(parsedSeries);
   }
 
   #saveSeries() {

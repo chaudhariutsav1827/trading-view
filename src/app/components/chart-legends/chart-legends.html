@@ -2,26 +2,14 @@
   @for (pane of legendService.panes(); track pane) {
     <div class="pane-legend" [style.top.px]="pane.top()">
       @for (s of pane.series; track s.id) {
-        <span class="legend-item">{{ s.name }} </span>
-        @if (s.type === SeriesTypes.CANDLE || s.type === SeriesTypes.HeikinAshi) {
-          <span class="legend-item">O {{ s.value()?.open }}</span>
-          <span class="legend-item">H {{ s.value()?.high }}</span>
-          <span class="legend-item">L {{ s.value()?.low }}</span>
-          <span class="legend-item">C {{ s.value()?.close }}</span>
-          <span class="legend-item">Change {{ s.value()?.change }}</span>
-          <span class="legend-item">% Change {{ s.value()?.percentChange }}</span>
-        }
-        @if (s.type === SeriesTypes.VOLUME) {
-          <span class="legend-item">V {{ s.value()?.volume }}</span>
-        }
-        @if (s.type === SeriesTypes.MACD) {
-          <span class="legend-item">{{ s.params.fastPeriods }}</span>
-          <span class="legend-item">{{ s.params.signalPeriods }}</span>
-          <span class="legend-item">{{ s.params.slowPeriods }}</span>
-          <span class="legend-item">{{ s.value()?.macd }}</span>
-          <span class="legend-item">{{ s.value()?.signal }}</span>
-          <span class="legend-item">{{ s.value()?.hist }}</span>
-        }
+        <div class="series-legend">
+          @if (s.type === SeriesType.CANDLE || s.type === SeriesType.HeikinAshi) {
+            <span class="legend-item">{{ appStore.settings.symbol$().symbol }} </span>
+          } @else {
+            <span class="legend-item">{{ s.name }} </span>
+          }
+          <ng-template appSeriesLegendHost [series]="s"></ng-template>
+        </div>
       }
     </div>
   }

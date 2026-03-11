@@ -1,17 +1,17 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { SeriesType } from '@core/constants/enums';
-import { SeriesStore } from '@state/series/series-store';
+import { AppStore } from '@state/app-store';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LegendService {
-  #storeService = inject(SeriesStore);
+  #appStore = inject(AppStore);
 
   readonly panes = computed(() => {
     const panes = new Map<number, any>();
 
-    for (const s of this.#storeService.series$().series) {
+    for (const s of this.#appStore.series.series$().series) {
       if (!panes.has(s.pane)) {
         panes.set(s.pane, {
           index: s.pane,
@@ -19,8 +19,6 @@ export class LegendService {
           top: signal(0),
         });
       }
-
-      panes.get(s.pane).series.push(s);
     }
     return Array.from(panes.values());
   });
@@ -58,11 +56,10 @@ export class LegendService {
   }
 
   updateSeriesApi() {
-    this.panes().forEach((p) => {
-      p.series = [];
-    });
-    this.#storeService.series$().series.forEach((s) => {
-      this.panes()[s.pane].series.push(s);
+    this.#appStore.series.series$().series.forEach((s) => {
+      const pane = this.panes().find((p) => p.index === s.pane);
+      if (!pane) return;
+      pane.series.push(s);
     });
   }
 
@@ -80,29 +77,51 @@ export class LegendService {
         switch (series.type) {
           case SeriesType.CANDLE:
           case SeriesType.HeikinAshi:
+            const change = price.close - price.open;
+            const percentChange = (change / price.open) * 100;
             series.value.set({
-              open: price.open,
-              high: price.high,
-              low: price.low,
-              close: price.close,
+              o: price.open?.toFixed(2), // open
+              h: price.high?.toFixed(2), // high
+              l: price.low?.toFixed(2), // low
+              c: price.close?.toFixed(2), // close
+              ch: (change > 0 ? '+' : '') + change.toFixed(2), // change
+              pc: (percentChange > 0 ? '+' : '') + percentChange.toFixed(3), // percent change
+              color: price.color, // color
             });
             break;
 
           case SeriesType.VOLUME:
-            series.value.set({ volume: price.value });
+            series.value.set({
+              v: this.#customVolumeFormater(price.value), // volume
+              color: price.color, // color
+            });
             break;
 
           case SeriesType.MACD:
             series.value.set({
-              macd: price.macd,
-              signal: price.signal,
-              hist: price.hist,
+              m: price.macd?.toFixed(2), // macd
+              s: price.signal?.toFixed(2), // signal
+              h: price.histogram?.toFixed(2), // histogram
+              color:
+                price.histogram > 0
+                  ? series.options.histogramUpColor
+                  : series.options.histogramDownColor, // color
             });
             break;
         }
       }
     }
-
-    console.log(this.panes()[0].series);
   }
+
+  #customVolumeFormater = (dataValue: number): string => {
+    const absValue = Math.abs(dataValue);
+
+    if (absValue >= 1000000) {
+      return `${(dataValue / 1000000).toFixed(2)}M`;
+    }
+    if (absValue >= 1000) {
+      return `${(dataValue / 1000).toFixed(2)}K`;
+    }
+    return dataValue.toFixed(0);
+  };
 }

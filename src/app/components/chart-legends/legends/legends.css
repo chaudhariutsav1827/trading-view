@@ -1,0 +1,10 @@
+:host {
+  display: contents;
+}
+
+.legend-item {
+  font-family: monospace;
+  pointer-events: auto;
+  user-select: none;
+  cursor: default;
+}

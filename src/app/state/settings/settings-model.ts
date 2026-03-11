@@ -1,4 +1,4 @@
-import { SeriesType, StockType } from '@core/constants/enums';
+import { OptionType, SeriesType, StockType } from '@core/constants/enums';
 
 export interface SettingsState {
   theme: 'dark' | 'light';
@@ -36,7 +36,7 @@ export interface Symbol {
   type: StockType;
   expiry?: string;
   strike?: number;
-  optionType?: 'call' | 'put';
+  optionType?: OptionType;
 }
 
 const defaultSymbol: Symbol = {

@@ -26,3 +26,8 @@ export enum StockType {
   Option = 'OPTIONS',
   Futures = 'FUTURES',
 }
+
+export enum OptionType {
+  Call = 'CALL',
+  Put = 'PUT',
+}

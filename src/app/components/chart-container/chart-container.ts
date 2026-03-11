@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  effect,
   ElementRef,
   OnDestroy,
   signal,
@@ -9,19 +10,17 @@ import {
 } from '@angular/core';
 import { createChart, IChartApi, LogicalRange, Time } from 'lightweight-charts';
 import { CHART_OPTIONS } from '@core/constants/chart-options';
-import { SettingsStore } from '@state/settings/settings-store';
 import { Timeframe, TIMEFRAME_OPTIONS } from '@state/settings/settings-model';
 import { ChartDataRequest } from '@models/requests';
 import { ChartRepository } from '@repositories/chart-repository';
 import { CANDLE_COUNTS, PREFETCH_THRESHOLD, RANGE_IDLE_DELAY } from '@core/constants/candle-counts';
 import { HelperService } from '@core/services/helper-service';
 import { ChartDataResponse } from '@models/responses';
-import { SeriesStore } from '@state/series/series-store';
 import { SeriesType } from '@core/constants/enums';
-import { LoaderStore } from '@state/loader/loader-store';
 import { ChartService } from '@services/chart-service';
 import { ChartLegends } from '../chart-legends/chart-legends';
 import { LegendService } from '@services/legend-service';
+import { AppStore } from '@state/app-store';
 
 @Component({
   selector: 'app-chart-container',
@@ -46,14 +45,14 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
 
   //#region  constructor
   constructor(
-    protected settingsStore: SettingsStore,
-    protected loaderStore: LoaderStore,
-    protected seriesStore: SeriesStore,
+    protected appStore: AppStore,
     private helperService: HelperService,
     private chartService: ChartService,
     private chartRepository: ChartRepository,
     private legendService: LegendService,
-  ) {}
+  ) {
+    this.#onSettingsChanged;
+  }
   //#endregion
 
   //#region lifecycle hooks
@@ -68,9 +67,7 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
 
   //#region event handlers
   onTimeframeChange(timeframe: Timeframe) {
-    this.settingsStore.setTimeframe(timeframe);
-    this.#shouldChartDataReset = true;
-    this.#getChartData();
+    this.appStore.settings.setTimeframe(timeframe);
   }
 
   onMouseDown() {
@@ -132,7 +129,7 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
   }
 
   #getChartData(isForwardLoading: boolean = false) {
-    this.loaderStore.showLoader();
+    this.appStore.loader.showLoader();
     const req = this.#getChartDataRequestModel(isForwardLoading);
 
     this.chartRepository.getChartData(req).subscribe({
@@ -140,14 +137,14 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
         if (res.data) this.#handleChartData(res.data, isForwardLoading);
       },
       complete: () => {
-        this.loaderStore.hideLoader();
+        this.appStore.loader.hideLoader();
       },
     });
   }
 
   #getChartDataRequestModel(isForwardLoading: boolean = false): ChartDataRequest {
     const indicatorSeriesRequest: Record<string, any> = {};
-    this.seriesStore.series$().series.forEach((s) => {
+    this.appStore.series.series$().series.forEach((s) => {
       switch (s.type) {
         case SeriesType.CANDLE:
         case SeriesType.HeikinAshi:
@@ -162,13 +159,15 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
       }
     });
 
+    const settings = this.appStore.settings.settings$();
+
     const req: ChartDataRequest = {
       indicatorSeriesRequest,
       isIndicatorExists: Object.keys(indicatorSeriesRequest).length > 0,
-      stockId: this.settingsStore.settings$().symbol.id,
-      candleLength: this.settingsStore.settings$().timeframe.value,
-      stockType: this.settingsStore.settings$().symbol.type,
-      seriesType: this.settingsStore.settings$().chartType,
+      stockId: settings.symbol.id,
+      candleLength: settings.timeframe.value,
+      stockType: settings.symbol.type,
+      seriesType: settings.chartType,
       candleCount: CANDLE_COUNTS.DEFAULT,
       isForwardLoading: isForwardLoading,
     };
@@ -189,7 +188,7 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
       [SeriesType.VOLUME]: chartData.volume,
     };
 
-    this.seriesStore.series$().series.forEach((s) => {
+    this.appStore.series.series$().series.forEach((s) => {
       if (!s.api) return;
 
       switch (s.type) {
@@ -221,7 +220,10 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
         }
       }
     });
-    if (this.#shouldChartDataReset) this.#shouldChartDataReset = false;
+    if (this.#shouldChartDataReset) {
+      this.#chartApi?.timeScale().fitContent();
+      this.#shouldChartDataReset = false;
+    }
   }
 
   #updateSeriesData(api: any, newData: unknown[], isForwardLoading: boolean) {
@@ -237,11 +239,11 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
   }
 
   #addSerieses() {
-    const mainChartPane = this.seriesStore
+    const mainChartPane = this.appStore.series
       .series$()
       .series.find((s) => s.type === SeriesType.CANDLE || s.type === SeriesType.HeikinAshi)?.pane;
 
-    this.seriesStore.series$().series.forEach((s) => {
+    this.appStore.series.series$().series.forEach((s) => {
       const seriesType = this.helperService.getSeriesType(s.type);
       const isCustomSeries = this.helperService.isCustomSeries(s.name);
 
@@ -251,6 +253,7 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
             s.options = {
               ...s.options,
               priceScaleId: '',
+              lastValueVisible: false,
             };
           }
           break;
@@ -260,6 +263,15 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
 
       const seriesApi = this.#addSeries(seriesType, s.options, s.pane, isCustomSeries);
       s.api = seriesApi;
+
+      if (s.type === SeriesType.VOLUME) {
+        seriesApi?.priceScale().applyOptions({
+          scaleMargins: {
+            top: s.pane === mainChartPane ? 0.8 : 0.1,
+            bottom: 0,
+          },
+        });
+      }
     });
   }
 
@@ -296,6 +308,23 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
       console.log('Loading newer candles');
       // this.#getChartData(true);
     }
+  }
+
+  #onSettingsChanged = effect(() => {
+    // signals on whose change chart needs to be reset
+    this.appStore.settings.chartType$();
+    this.appStore.settings.symbol$();
+    this.appStore.settings.timeframe$();
+
+    if (!this.#chartApi) return;
+    this.#resetChart();
+  });
+
+  #resetChart() {
+    this.#shouldChartDataReset = true;
+    this.#oldestDateTime = null;
+    this.#newestDateTime = null;
+    this.#getChartData();
   }
 
   //#endregion

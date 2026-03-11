@@ -1,0 +1,94 @@
+<div class="dialog">
+  <!-- Header -->
+  <div class="dialog-header">
+    <div class="search-field">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.35-4.35" />
+      </svg>
+      <input
+        #searchInput
+        type="text"
+        placeholder="Search symbol or name…"
+        autofocus
+        [value]="query()"
+        (input)="onQueryChange($event.target.value)"
+        (keydown)="onKeyDown($event)"
+      />
+    </div>
+    <button class="btn-icon" (click)="closeDialog()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Body -->
+  <div class="dialog-body">
+    <!-- Loading skeleton -->
+    @if (loading()) {
+      <div class="skeleton-list">
+        @for (i of [1, 2, 3, 4, 5]; track $index) {
+          <div class="skeleton-item">
+            <div class="sk sk-icon"></div>
+            <div class="sk-text">
+              <div class="sk sk-title"></div>
+              <div class="sk sk-sub"></div>
+            </div>
+            <div class="sk sk-badge"></div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Error state -->
+    @if (error() && !loading()) {
+      <div class="state-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 8v4m0 4h.01" />
+        </svg>
+        <span>{{ error() }}</span>
+      </div>
+    }
+
+    <!-- No results -->
+    @if (!loading() && !error() && results().length === 0 && query().length > 0) {
+      <div class="state-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
+        </svg>
+        <span
+          >No results for <b>"{{ query() }}"</b></span
+        >
+      </div>
+    }
+
+    @if (!loading() && !error() && results().length > 0) {
+      <div class="list-label">Popular</div>
+      <ul class="result-list">
+        @for (item of results(); track item.id + item.type) {
+          <li class="result-item" [class.active]="activeIndex() === $index" (click)="select(item)">
+            <div class="symbol-icon stock">{{ item.name.slice(0, 2) }}</div>
+            <div class="symbol-info">
+              <span class="symbol-ticker">{{ item.name }}</span>
+              <span class="symbol-name">{{ item.symbolName }}</span>
+            </div>
+            <div class="symbol-meta">
+              <span class="type-badge" [class]="item.type.toLowerCase()">{{ item.type }}</span>
+              <span class="exchange">{{ item.symbolName }}</span>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+  <!-- Footer -->
+  <div class="dialog-footer">
+    <span><kbd>↑↓</kbd> Navigate</span>
+    <span><kbd>↵</kbd> Select</span>
+    <span><kbd>Esc</kbd> Close</span>
+  </div>
+</div>

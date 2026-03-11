@@ -1,0 +1,12 @@
+<span class="legend-item">{{ params()?.fastPeriods }}</span>
+<span class="legend-item">{{ params()?.signalPeriods }}</span>
+<span class="legend-item">{{ params()?.slowPeriods }}</span>
+<span class="legend-item" [style.color]="options()?.macdLineColor" title="MACD">
+  {{ value()?.m }}
+</span>
+<span class="legend-item" [style.color]="options()?.signalLineColor" title="Signal">
+  {{ value()?.s }}
+</span>
+<span class="legend-item" [style.color]="color()" title="Histogram">
+  {{ value()?.h }}
+</span>

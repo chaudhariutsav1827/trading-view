@@ -1,2 +1,3 @@
 export * from './chart-data.response';
 export * from './chart-range.response';
+export * from './stock.response';

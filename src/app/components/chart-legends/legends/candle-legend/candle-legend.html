@@ -1,0 +1,12 @@
+<span class="legend-item">O</span>
+<span class="legend-item" [style.color]="color()">{{ value()?.o }}</span>
+<span class="legend-item">H</span>
+<span class="legend-item" [style.color]="color()">{{ value()?.h }}</span>
+<span class="legend-item">L</span>
+<span class="legend-item" [style.color]="color()">{{ value()?.l }}</span>
+<span class="legend-item">C</span>
+<span class="legend-item" [style.color]="color()">{{ value()?.c }}</span>
+<span class="legend-item" [style.color]="color()" title="Change">
+  {{ value()?.ch }}
+</span>
+<span class="legend-item" [style.color]="color()" title="Change %"> ({{ value()?.pc }}) </span>

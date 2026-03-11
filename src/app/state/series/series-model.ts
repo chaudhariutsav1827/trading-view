@@ -42,11 +42,6 @@ export const DEFAULT_SERIES: SeriesState = {
         priceFormat: {
           type: 'volume',
         },
-        scaleMargins: {
-          top: 0.8,
-          bottom: 0,
-        },
-        lastValueVisible: false,
       },
       params: {},
       value: signal({}),
@@ -57,8 +52,8 @@ export const DEFAULT_SERIES: SeriesState = {
       type: SeriesType.MACD,
       pane: 2,
       options: {
-        macdLineColor: '#00d4aa',
-        signalLineColor: '#ff4757',
+        macdLineColor: '#2962FF',
+        signalLineColor: '#FF6D00',
         histogramUpColor: '#00d4aa',
         histogramDownColor: '#ff4757',
       },

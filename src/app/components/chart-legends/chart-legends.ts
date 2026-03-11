@@ -1,22 +1,22 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { SeriesType } from '@core/constants/enums';
 import { LegendService } from '@services/legend-service';
+import { SeriesLegendHost } from './directive/series-legend-host';
+import { AppStore } from '@state/app-store';
 
 @Component({
   selector: 'app-chart-legends',
   standalone: true,
-  imports: [],
+  imports: [SeriesLegendHost],
   templateUrl: './chart-legends.html',
   styleUrl: './chart-legends.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChartLegends {
-  readonly chartContainer = input<HTMLDivElement | null>(null);
-  readonly SeriesTypes = SeriesType;
+  readonly SeriesType = SeriesType;
 
-  constructor(protected legendService: LegendService) {}
-
-  updatePanePositions() {
-    this.legendService.updatePanePositions(this.chartContainer());
-  }
+  constructor(
+    protected appStore: AppStore,
+    protected legendService: LegendService,
+  ) {}
 }

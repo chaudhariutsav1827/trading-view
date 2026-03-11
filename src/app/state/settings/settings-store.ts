@@ -1,4 +1,4 @@
-import { effect, Injectable, signal } from '@angular/core';
+import { computed, effect, Injectable, signal } from '@angular/core';
 import { DEFAULT_SETTINGS, SettingsState, Timeframe, Symbol } from './settings-model';
 import { SeriesType } from '@core/constants/enums';
 
@@ -9,11 +9,11 @@ export class SettingsStore {
   private settings = signal<SettingsState>(DEFAULT_SETTINGS);
 
   readonly settings$ = this.settings.asReadonly();
-  readonly getChartType = () => this.settings$().chartType;
-  readonly getSymbol = () => this.settings$().symbol;
-  readonly getTimeframe = () => this.settings$().timeframe;
-  readonly getTheme = () => this.settings$().theme;
-  readonly getRange = () => this.settings$().range;
+  readonly chartType$ = computed(() => this.settings().chartType);
+  readonly symbol$ = computed(() => this.settings().symbol);
+  readonly timeframe$ = computed(() => this.settings().timeframe);
+  readonly theme$ = computed(() => this.settings().theme);
+  readonly range$ = computed(() => this.settings().range);
 
   constructor() {
     this.#loadSettings();

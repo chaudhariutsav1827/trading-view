@@ -41,6 +41,7 @@ export class ChartService {
       high: item.high,
       low: item.low,
       close: item.close,
+      color: item.close > item.open ? '#00d4aa' : '#ff4757',
     }));
   }
 

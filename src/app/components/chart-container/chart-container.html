@@ -3,7 +3,7 @@
     @for (timeframe of timeFrameOptions; track timeframe.value) {
       <button
         class="btn"
-        [class.active]="timeframe.value === settingsStore.getTimeframe().value"
+        [class.active]="timeframe.value === appStore.settings.settings$().timeframe.value"
         (click)="onTimeframeChange(timeframe)"
       >
         {{ timeframe.label }}
@@ -16,10 +16,10 @@
   </div>
 
   <div #chartContainer id="chart-container" (mousedown)="onMouseDown()" (mouseup)="onMouseUp()">
-    @if (loaderStore.loader$()) {
+    @if (appStore.loader.loader$()) {
       <div class="loading-indicator" id="loader">⟳ Loading more candles…</div>
     }
-    <app-chart-legends [chartContainer]="chartContainer" />
+    <app-chart-legends />
   </div>
 
   <div class="status-bar">
