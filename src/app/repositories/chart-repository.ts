@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { BaseService } from '@core/services/base-service';
 import { END_POINTS } from '@core/constants/end-points';
-import { ChartDataRequest } from '@models/requests/chart-data.request';
 import { Observable } from 'rxjs';
 import { ApiResponse } from '@core/models/api-response';
-import { ChartDataResponse } from '@models/responses';
+import { ChartDataResponse, ChartRangeResponse } from '@models/responses';
+import { ChartRangeRequest, ChartDataRequest } from '@models/requests';
 
 @Injectable({
   providedIn: 'root',
@@ -12,11 +12,11 @@ import { ChartDataResponse } from '@models/responses';
 export class ChartRepository {
   constructor(private baseService: BaseService) {}
 
-  getChartData(req: ChartDataRequest): Observable<ApiResponse<ChartDataResponse>> {
-    return this.baseService.post(END_POINTS.CHARTS.GET.CHARTS, req);
+  getRangeData(model: ChartRangeRequest): Observable<ApiResponse<ChartRangeResponse>> {
+    return this.baseService.post(END_POINTS.CHARTS.GET.DATE_RANGE, model);
   }
 
-  getRangeData(req: ChartDataRequest): Observable<ApiResponse<ChartDataResponse>> {
+  getChartData(req: ChartDataRequest): Observable<ApiResponse<ChartDataResponse>> {
     return this.baseService.post(END_POINTS.CHARTS.GET.CHARTS, req);
   }
 }

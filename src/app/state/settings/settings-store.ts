@@ -1,6 +1,7 @@
-import { computed, effect, Injectable, signal } from '@angular/core';
+import { computed, effect, Injectable, signal, untracked } from '@angular/core';
 import { DEFAULT_SETTINGS, SettingsState, Timeframe, Symbol } from './settings-model';
 import { SeriesType } from '@core/constants/enums';
+import { Time } from 'lightweight-charts';
 
 @Injectable({
   providedIn: 'root',
@@ -9,17 +10,22 @@ export class SettingsStore {
   private settings = signal<SettingsState>(DEFAULT_SETTINGS);
 
   readonly settings$ = this.settings.asReadonly();
-  readonly chartType$ = computed(() => this.settings().chartType);
-  readonly symbol$ = computed(() => this.settings().symbol);
-  readonly timeframe$ = computed(() => this.settings().timeframe);
-  readonly theme$ = computed(() => this.settings().theme);
-  readonly range$ = computed(() => this.settings().range);
+  readonly chartType$ = computed(() => this.settings().chartType, {
+    equal: (a, b) => a === b,
+  });
+  readonly symbol$ = computed(() => this.settings().symbol, {
+    equal: (a, b) => a.id === b.id && a.type === b.type,
+  });
+  readonly timeframe$ = computed(() => this.settings().timeframe, {
+    equal: (a, b) => a.value === b.value,
+  });
+  readonly theme$ = computed(() => this.settings().theme, {
+    equal: (a, b) => a === b,
+  });
 
   constructor() {
     this.#loadSettings();
-    effect(() => {
-      this.#saveSettings();
-    });
+    this.#onSettingsChanged();
   }
 
   setTheme(theme: 'dark' | 'light') {
@@ -45,8 +51,14 @@ export class SettingsStore {
     }
   }
 
-  #saveSettings() {
-    localStorage.setItem('settings', JSON.stringify(this.settings()));
-    console.log('Settings changed', this.settings());
+  #onSettingsChanged() {
+    effect(() => {
+      const current = this.settings();
+      console.log('Settings changed', current);
+
+      untracked(() => {
+        localStorage.setItem('settings', JSON.stringify(current));
+      });
+    });
   }
 }

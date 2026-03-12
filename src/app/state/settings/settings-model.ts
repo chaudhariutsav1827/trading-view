@@ -5,17 +5,11 @@ export interface SettingsState {
   chartType: SeriesType;
   timeframe: Timeframe;
   symbol: Symbol;
-  range?: Range;
 }
 
 export type Timeframe = {
   label: string;
   value: number;
-};
-
-export type Range = {
-  start: number;
-  end: number;
 };
 
 export const TIMEFRAME_OPTIONS: Timeframe[] = [

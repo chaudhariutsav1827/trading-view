@@ -1,4 +1,4 @@
-import { effect, Injectable, signal } from '@angular/core';
+import { effect, Injectable, signal, untracked } from '@angular/core';
 import { DEFAULT_SERIES, SeriesModel, SeriesState } from './series-model';
 
 @Injectable({
@@ -11,9 +11,7 @@ export class SeriesStore {
 
   constructor() {
     this.#loadSeries();
-    effect(() => {
-      this.#saveSeries();
-    });
+    this.#onSeriesChanged();
   }
 
   #loadSeries() {
@@ -28,13 +26,22 @@ export class SeriesStore {
     this.series.set(parsedSeries);
   }
 
-  #saveSeries() {
-    const seriesList = this.series$().series.map((s) => {
+  #onSeriesChanged() {
+    effect(() => {
+      const current = this.series$();
+      console.log('Series changed', current);
+      untracked(() => {
+        this.#saveSeries(current);
+      });
+    });
+  }
+
+  #saveSeries(current: SeriesState) {
+    const seriesList = current.series.map((s) => {
       const { api, value, ...series } = s;
       return series;
     });
     const state = { series: seriesList };
     localStorage.setItem('series', JSON.stringify(state));
-    console.log('Series changed', state);
   }
 }

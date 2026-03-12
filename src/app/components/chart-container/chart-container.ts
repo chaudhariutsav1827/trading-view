@@ -6,16 +6,17 @@ import {
   ElementRef,
   OnDestroy,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { createChart, IChartApi, LogicalRange, Time } from 'lightweight-charts';
 import { CHART_OPTIONS } from '@core/constants/chart-options';
 import { Timeframe, TIMEFRAME_OPTIONS } from '@state/settings/settings-model';
-import { ChartDataRequest } from '@models/requests';
+import { ChartDataRequest, ChartRangeRequest } from '@models/requests';
 import { ChartRepository } from '@repositories/chart-repository';
 import { CANDLE_COUNTS, PREFETCH_THRESHOLD, RANGE_IDLE_DELAY } from '@core/constants/candle-counts';
 import { HelperService } from '@core/services/helper-service';
-import { ChartDataResponse } from '@models/responses';
+import { ChartDataResponse, ChartRangeResponse } from '@models/responses';
 import { SeriesType } from '@core/constants/enums';
 import { ChartService } from '@services/chart-service';
 import { ChartLegends } from '../chart-legends/chart-legends';
@@ -42,6 +43,7 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
   #previousRange: LogicalRange | null = null;
   #shouldChartDataReset: boolean = true;
   #rangeChangeTimeout: any = null;
+  #chartDataApiCalled: boolean = false;
 
   //#region  constructor
   constructor(
@@ -51,7 +53,9 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
     private chartRepository: ChartRepository,
     private legendService: LegendService,
   ) {
-    this.#onSettingsChanged;
+    this.#onSymbolChanged();
+    this.#onTimeframeChanged();
+    this.#onChartTypeChanged();
   }
   //#endregion
 
@@ -123,12 +127,49 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
     this.#chartApi = createChart(container, CHART_OPTIONS);
     this.#addSerieses();
     this.#updateLegends();
-    this.#getChartData();
+    this.#getRangeData();
     this.#subscribeToChartTimeScale();
     this.#subscribeToCrosshairMove();
   }
 
+  #getRangeData() {
+    this.appStore.loader.showLoader();
+    const req = this.#getRangeDataRequestModel();
+
+    this.chartRepository.getRangeData(req).subscribe({
+      next: (res) => {
+        if (res.data) this.#handleRangeData(res.data);
+        this.#getChartData();
+      },
+      complete: () => {
+        this.appStore.loader.hideLoader();
+      },
+    });
+  }
+
+  #getRangeDataRequestModel(): ChartRangeRequest {
+    const settings = this.appStore.settings.settings$();
+
+    const req: ChartRangeRequest = {
+      stockId: settings.symbol.id,
+      candleLength: settings.timeframe.value,
+      stockType: settings.symbol.type,
+    };
+
+    return req;
+  }
+
+  #handleRangeData(data: ChartRangeResponse) {
+    const startRange = this.helperService.timeToTz(data.startDate);
+    const endRange = this.helperService.timeToTz(data.endDate);
+    this.appStore.chart.setRange(startRange, endRange);
+  }
+
   #getChartData(isForwardLoading: boolean = false) {
+    if (this.#chartDataApiCalled) return;
+
+    this.#chartDataApiCalled = true;
+
     this.appStore.loader.showLoader();
     const req = this.#getChartDataRequestModel(isForwardLoading);
 
@@ -138,6 +179,7 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
       },
       complete: () => {
         this.appStore.loader.hideLoader();
+        this.#chartDataApiCalled = false;
       },
     });
   }
@@ -234,7 +276,6 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
 
     const existing = api.data();
     const merged = isForwardLoading ? [...existing, ...newData] : [...newData, ...existing];
-
     api.setData(merged);
   }
 
@@ -298,33 +339,61 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
     if (range.from === this.#previousRange.from && range.to === this.#previousRange.to) return;
 
     this.#previousRange = range;
-    console.log('Range change finished:', range);
 
-    if (range.from < PREFETCH_THRESHOLD) {
-      console.log('Loading older candles');
+    const candleData = this.appStore.series
+      .series$()
+      .series.find((s) => s.type === SeriesType.CANDLE || s.type === SeriesType.HeikinAshi);
+    const firstCandleTime = candleData?.api?.data()[0].time;
+    const lastCandleTime = candleData?.api?.data()[candleData?.api?.data().length - 1].time;
+    const chartRange = this.appStore.chart.range$();
+
+    if (chartRange?.start !== firstCandleTime && range.from < PREFETCH_THRESHOLD) {
       this.#getChartData();
     }
-    if (range.to > this.totalCandles() - PREFETCH_THRESHOLD) {
-      console.log('Loading newer candles');
-      // this.#getChartData(true);
+    if (chartRange?.end !== lastCandleTime && range.to > this.totalCandles() - PREFETCH_THRESHOLD) {
+      this.#getChartData(true);
     }
   }
 
-  #onSettingsChanged = effect(() => {
-    // signals on whose change chart needs to be reset
-    this.appStore.settings.chartType$();
-    this.appStore.settings.symbol$();
-    this.appStore.settings.timeframe$();
+  #onSymbolChanged() {
+    effect(() => {
+      this.appStore.settings.symbol$();
 
-    if (!this.#chartApi) return;
-    this.#resetChart();
-  });
+      untracked(() => {
+        if (!this.#chartApi) return;
+        this.#resetChart(true);
+      });
+    });
+  }
 
-  #resetChart() {
+  #onTimeframeChanged() {
+    effect(() => {
+      this.appStore.settings.timeframe$();
+
+      untracked(() => {
+        if (!this.#chartApi) return;
+        this.#resetChart(true);
+      });
+    });
+  }
+
+  #onChartTypeChanged() {
+    effect(() => {
+      this.appStore.settings.chartType$();
+
+      untracked(() => {
+        if (!this.#chartApi) return;
+        this.#resetChart();
+      });
+    });
+  }
+
+  #resetChart(shouldGetRangeData: boolean = false) {
     this.#shouldChartDataReset = true;
     this.#oldestDateTime = null;
     this.#newestDateTime = null;
-    this.#getChartData();
+    if (shouldGetRangeData) this.#getRangeData();
+    else this.#getChartData();
   }
 
   //#endregion
