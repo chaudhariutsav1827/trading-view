@@ -14,13 +14,27 @@ export class SeriesStore {
     this.#onSeriesChanged();
   }
 
+  /**
+   * Apply options to a series
+   * @param seriesId Series ID
+   * @param options Options to apply
+   */
+  applyOptions(seriesId: number, options: any) {
+    const series = this.series().series.find((s) => s.id === seriesId);
+    if (series) {
+      series.api?.applyOptions({ ...series.options, ...options });
+      series.liveOptions.set({ ...series.options, ...options });
+    }
+  }
+
   #loadSeries() {
     const series = localStorage.getItem('series');
     const parsedSeries = series ? JSON.parse(series) : DEFAULT_SERIES;
 
     // adding value signal for legends to each series
     parsedSeries.series.forEach((s: SeriesModel) => {
-      s.value = signal({});
+      s.legend = signal(null);
+      s.liveOptions = signal({});
     });
 
     this.series.set(parsedSeries);
@@ -38,7 +52,7 @@ export class SeriesStore {
 
   #saveSeries(current: SeriesState) {
     const seriesList = current.series.map((s) => {
-      const { api, value, ...series } = s;
+      const { api, liveOptions, legend, ...series } = s;
       return series;
     });
     const state = { series: seriesList };

@@ -1,4 +1,4 @@
-import { SeriesType, StockType } from '@core/constants/enums';
+import { ChartType, StockType } from '@core/constants/enums';
 
 export interface ChartDataRequest extends IndicatorSeriesRequest<IIndicatorsRequest> {
   isIndicatorExists: boolean;
@@ -10,7 +10,7 @@ export interface CandleRequest {
   candleLength: number;
   isForwardLoading: boolean;
   stockId: number;
-  seriesType: SeriesType;
+  seriesType: ChartType;
   stockType: StockType;
 }
 

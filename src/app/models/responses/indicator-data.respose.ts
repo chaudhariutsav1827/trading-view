@@ -11,9 +11,9 @@ import {
   VolumeModel,
   VwapModel,
   WtModel,
-} from './indicator-models';
+} from '@models/dto/indicator-models';
 
-export interface IndicatorModel {
+export interface IndicatorDataResponse {
   ema?: MultipleEmaModel[];
   bb?: BbModel[];
   ichimoku?: IchimokuModel[];

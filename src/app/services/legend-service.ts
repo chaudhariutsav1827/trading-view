@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { SeriesType } from '@core/constants/enums';
 import { AppStore } from '@state/app-store';
+import { MouseEventParams, Time } from 'lightweight-charts';
 
 @Injectable({
   providedIn: 'root',
@@ -64,6 +64,7 @@ export class LegendService {
   }
 
   updateLegendValues(param: any) {
+    // MouseEventParams<Time>
     if (!param.seriesData) return;
 
     const panes = this.panes();
@@ -75,37 +76,40 @@ export class LegendService {
         if (!price) continue;
 
         switch (series.type) {
-          case SeriesType.CANDLE:
-          case SeriesType.HeikinAshi:
+          case 'Candlestick':
+          case 'HeikinAshi':
             const change = price.close - price.open;
             const percentChange = (change / price.open) * 100;
-            series.value.set({
-              o: price.open?.toFixed(2), // open
-              h: price.high?.toFixed(2), // high
-              l: price.low?.toFixed(2), // low
-              c: price.close?.toFixed(2), // close
-              ch: (change > 0 ? '+' : '') + change.toFixed(2), // change
-              pc: (percentChange > 0 ? '+' : '') + percentChange.toFixed(3), // percent change
-              color: price.color, // color
+            series.legend.set({
+              name: series.name,
+              open: price.open?.toFixed(2),
+              high: price.high?.toFixed(2),
+              low: price.low?.toFixed(2),
+              close: price.close?.toFixed(2),
+              change: (change > 0 ? '+' : '') + change.toFixed(2),
+              percentChange: (percentChange > 0 ? '+' : '') + percentChange.toFixed(3),
+              color: price.color,
             });
             break;
 
-          case SeriesType.VOLUME:
-            series.value.set({
-              v: this.#customVolumeFormater(price.value), // volume
-              color: price.color, // color
+          case 'Volume':
+            series.legend.set({
+              name: series.name,
+              volume: this.#customVolumeFormater(price.value),
+              color: price.color,
             });
             break;
 
-          case SeriesType.MACD:
-            series.value.set({
-              m: price.macd?.toFixed(2), // macd
-              s: price.signal?.toFixed(2), // signal
-              h: price.histogram?.toFixed(2), // histogram
+          case 'MACD':
+            series.legend.set({
+              name: series.name,
+              macd: price.macd?.toFixed(2),
+              signal: price.signal?.toFixed(2),
+              histogram: price.histogram?.toFixed(2),
               color:
                 price.histogram > 0
                   ? series.options.histogramUpColor
-                  : series.options.histogramDownColor, // color
+                  : series.options.histogramDownColor,
             });
             break;
         }

@@ -2,6 +2,30 @@
   display: contents;
 }
 
+.legend-static {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 8px;
+  cursor: default;
+}
+
+.legend-values {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 4px;
+  visibility: visible;
+}
+
+:host-context(.series-legend:has(.legend-static:hover)) .legend-values,
+:host-context(.series-legend:has(.legend-actions:hover)) .legend-values {
+  visibility: hidden;
+  width: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
 .legend-item {
   font-family: monospace;
   pointer-events: auto;

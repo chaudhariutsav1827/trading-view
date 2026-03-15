@@ -1,2 +1,3 @@
-export * from './candle-model';
-export * from './indicator-model';
+export * from './formated-chart-data-model';
+export * from './legend-models';
+export * from './SeriesOptionsMap';

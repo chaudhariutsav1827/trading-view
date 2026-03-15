@@ -1,12 +1,21 @@
-<span class="legend-item">O</span>
-<span class="legend-item" [style.color]="color()">{{ value()?.o }}</span>
-<span class="legend-item">H</span>
-<span class="legend-item" [style.color]="color()">{{ value()?.h }}</span>
-<span class="legend-item">L</span>
-<span class="legend-item" [style.color]="color()">{{ value()?.l }}</span>
-<span class="legend-item">C</span>
-<span class="legend-item" [style.color]="color()">{{ value()?.c }}</span>
-<span class="legend-item" [style.color]="color()" title="Change">
-  {{ value()?.ch }}
-</span>
-<span class="legend-item" [style.color]="color()" title="Change %"> ({{ value()?.pc }}) </span>
+<div class="legend-static">
+  <span class="legend-item">{{ appStore.settings.symbol$().symbol }} </span>
+</div>
+@if (isVisible()) {
+  <div class="legend-values">
+    <span class="legend-item">O</span>
+    <span class="legend-item" [style.color]="color()">{{ legendValue()?.open }}</span>
+    <span class="legend-item">H</span>
+    <span class="legend-item" [style.color]="color()">{{ legendValue()?.high }}</span>
+    <span class="legend-item">L</span>
+    <span class="legend-item" [style.color]="color()">{{ legendValue()?.low }}</span>
+    <span class="legend-item">C</span>
+    <span class="legend-item" [style.color]="color()">{{ legendValue()?.close }}</span>
+    <span class="legend-item" [style.color]="color()" title="Change">
+      {{ legendValue()?.change }}
+    </span>
+    <span class="legend-item" [style.color]="color()" title="Change %">
+      ({{ legendValue()?.percentChange }})
+    </span>
+  </div>
+}

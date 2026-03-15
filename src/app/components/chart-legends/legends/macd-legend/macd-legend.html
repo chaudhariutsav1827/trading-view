@@ -1,12 +1,19 @@
-<span class="legend-item">{{ params()?.fastPeriods }}</span>
-<span class="legend-item">{{ params()?.signalPeriods }}</span>
-<span class="legend-item">{{ params()?.slowPeriods }}</span>
-<span class="legend-item" [style.color]="options()?.macdLineColor" title="MACD">
-  {{ value()?.m }}
-</span>
-<span class="legend-item" [style.color]="options()?.signalLineColor" title="Signal">
-  {{ value()?.s }}
-</span>
-<span class="legend-item" [style.color]="color()" title="Histogram">
-  {{ value()?.h }}
-</span>
+<div class="legend-static">
+  <span class="legend-item">{{ series()?.name }} </span>
+  <span class="legend-item">{{ params()?.fastPeriods }}</span>
+  <span class="legend-item">{{ params()?.signalPeriods }}</span>
+  <span class="legend-item">{{ params()?.slowPeriods }}</span>
+</div>
+@if (isVisible()) {
+  <div class="legend-values">
+    <span class="legend-item" [style.color]="options()?.macdLineColor" title="MACD">
+      {{ legendValue()?.macd }}
+    </span>
+    <span class="legend-item" [style.color]="options()?.signalLineColor" title="Signal">
+      {{ legendValue()?.signal }}
+    </span>
+    <span class="legend-item" [style.color]="legendValue()?.color" title="Histogram">
+      {{ legendValue()?.histogram }}
+    </span>
+  </div>
+}

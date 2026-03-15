@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { SeriesModel } from '@state/series/series-model';
 
 @Component({
   selector: 'app-volume-legend',
@@ -8,13 +9,15 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VolumeLegend {
-  series = input<any>();
+  series = input<SeriesModel>();
 
-  value = computed(() => {
-    return this.series()?.value();
+  isVisible = computed(() => {
+    return this.series()?.liveOptions()?.visible;
   });
 
-  color = computed(() => {
-    return this.value()?.color;
+  legendValue = computed(() => {
+    const legend = this.series()?.legend();
+    if (!legend || legend.name !== 'Volume') return null;
+    return legend;
   });
 }

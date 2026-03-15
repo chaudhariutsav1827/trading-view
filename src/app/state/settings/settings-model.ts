@@ -1,8 +1,8 @@
-import { OptionType, SeriesType, StockType } from '@core/constants/enums';
+import { ChartType, OptionType, StockType } from '@core/constants/enums';
 
 export interface SettingsState {
   theme: 'dark' | 'light';
-  chartType: SeriesType;
+  chartType: ChartType;
   timeframe: Timeframe;
   symbol: Symbol;
 }
@@ -41,7 +41,7 @@ const defaultSymbol: Symbol = {
 
 export const DEFAULT_SETTINGS: SettingsState = {
   theme: 'dark',
-  chartType: SeriesType.CANDLE,
+  chartType: ChartType.Candle,
   timeframe: TIMEFRAME_OPTIONS[0],
   symbol: defaultSymbol,
 };

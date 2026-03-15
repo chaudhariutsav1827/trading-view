@@ -1,3 +1,10 @@
-<span class="legend-item" [style.color]="color()" title="Volume">
-  {{ value()?.v }}
-</span>
+<div class="legend-static">
+  <span class="legend-item">{{ series()?.name }} </span>
+</div>
+@if (isVisible()) {
+  <div class="legend-values">
+    <span class="legend-item" [style.color]="legendValue()?.color" title="Volume">
+      {{ legendValue()?.volume }}
+    </span>
+  </div>
+}

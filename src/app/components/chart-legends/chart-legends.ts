@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { SeriesType } from '@core/constants/enums';
 import { LegendService } from '@services/legend-service';
 import { SeriesLegendHost } from './directive/series-legend-host';
 import { AppStore } from '@state/app-store';
+import { SeriesModel } from '@state/series/series-model';
 
 @Component({
   selector: 'app-chart-legends',
@@ -13,10 +13,17 @@ import { AppStore } from '@state/app-store';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChartLegends {
-  readonly SeriesType = SeriesType;
-
   constructor(
     protected appStore: AppStore,
     protected legendService: LegendService,
   ) {}
+
+  onToggleVisibility(series: SeriesModel) {
+    const isVisible = series.liveOptions()?.visible;
+    this.appStore.series.applyOptions(series.id, { visible: !isVisible });
+  }
+
+  onOpenSettings(s: SeriesModel) {}
+
+  onOpenMenu(series: SeriesModel) {}
 }

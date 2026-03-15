@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { AppStore } from '@state/app-store';
+import { SeriesModel } from '@state/series/series-model';
 
 @Component({
   selector: 'app-candle-legend',
@@ -8,13 +10,20 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CandleLegend {
-  series = input<any | undefined>();
+  appStore = inject(AppStore);
+  series = input<SeriesModel | undefined>();
 
-  value = computed(() => {
-    return this.series()?.value();
+  isVisible = computed(() => {
+    return this.series()?.liveOptions()?.visible;
+  });
+
+  legendValue = computed(() => {
+    const legend = this.series()?.legend();
+    if (!legend || legend.name !== 'Candlestick') return null;
+    return legend;
   });
 
   color = computed(() => {
-    return this.value()?.color;
+    return this.legendValue()?.color;
   });
 }

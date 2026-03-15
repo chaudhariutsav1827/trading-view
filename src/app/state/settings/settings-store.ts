@@ -1,7 +1,6 @@
 import { computed, effect, Injectable, signal, untracked } from '@angular/core';
 import { DEFAULT_SETTINGS, SettingsState, Timeframe, Symbol } from './settings-model';
-import { SeriesType } from '@core/constants/enums';
-import { Time } from 'lightweight-charts';
+import { ChartType } from '@core/constants/enums';
 
 @Injectable({
   providedIn: 'root',
@@ -32,7 +31,7 @@ export class SettingsStore {
     this.settings.update((s) => ({ ...s, theme }));
   }
 
-  setChartType(chartType: SeriesType) {
+  setChartType(chartType: ChartType) {
     this.settings.update((s) => ({ ...s, chartType }));
   }
 

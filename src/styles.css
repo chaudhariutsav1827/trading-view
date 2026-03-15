@@ -31,3 +31,7 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+a#tv-attr-logo {
+  display: none;
+}

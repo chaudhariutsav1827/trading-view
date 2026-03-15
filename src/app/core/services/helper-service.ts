@@ -1,7 +1,12 @@
 import { Injectable } from '@angular/core';
-import { SeriesType } from '@core/constants/enums';
 import { MACDSeries } from 'app/indicators/macd/macd-series';
-import { CandlestickSeries, HistogramSeries, LineSeries, Time } from 'lightweight-charts';
+import {
+  CandlestickSeries,
+  HistogramSeries,
+  LineSeries,
+  SeriesType,
+  Time,
+} from 'lightweight-charts';
 
 @Injectable({
   providedIn: 'root',
@@ -35,60 +40,31 @@ export class HelperService {
    */
   getSeriesType(type: SeriesType) {
     switch (type) {
-      case SeriesType.CANDLE:
-      case SeriesType.HeikinAshi:
-        return CandlestickSeries;
-      case SeriesType.EMA:
-      case SeriesType.BB:
-      case SeriesType.RSI:
-      case SeriesType.Ichimoku:
-      case SeriesType.MACD:
-        return MACDSeries;
-      case SeriesType.WT:
-      case SeriesType.RS:
-      case SeriesType.VWAP:
-      case SeriesType.ADX:
-      case SeriesType.ST:
-      case SeriesType.OI:
-      case SeriesType.IV:
-      case SeriesType.DELTA:
-      case SeriesType.GAMMA:
-      case SeriesType.THETA:
-      case SeriesType.VEGA:
-      case SeriesType.RHO:
-        return LineSeries;
-      case SeriesType.VOLUME:
-        return HistogramSeries;
+      case 'Candlestick':
+        return { isCustom: false, series: CandlestickSeries };
+      // case ChartSeries.EMA:
+      // case SeriesType.BB:
+      // case SeriesType.RSI:
+      // case SeriesType.Ichimoku:
+      case 'MACD':
+        return { isCustom: true, series: new MACDSeries() };
+      // case SeriesType.WT:
+      // case SeriesType.RS:
+      // case SeriesType.VWAP:
+      // case SeriesType.ADX:
+      // case SeriesType.ST:
+      // case SeriesType.OI:
+      // case SeriesType.IV:
+      // case SeriesType.DELTA:
+      // case SeriesType.GAMMA:
+      // case SeriesType.THETA:
+      // case SeriesType.VEGA:
+      // case SeriesType.RHO:
+      //   return LineSeries;
+      case 'Volume':
+        return { isCustom: false, series: HistogramSeries };
       default:
-        return LineSeries;
+        return { isCustom: false, series: LineSeries };
     }
-  }
-
-  /**
-   * Check if series is custom
-   * @param name
-   * @returns
-   */
-  isCustomSeries(name: string): boolean {
-    const customSeries = [
-      'macd',
-      'ema',
-      'bb',
-      'rsi',
-      'ichimoku',
-      'wt',
-      'rs',
-      'vwap',
-      'adx',
-      'st',
-      'oi',
-      'iv',
-      'delta',
-      'gamma',
-      'theta',
-      'vega',
-      'rho',
-    ];
-    return customSeries.includes(name.toLowerCase());
   }
 }

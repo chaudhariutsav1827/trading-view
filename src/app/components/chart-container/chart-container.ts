@@ -17,11 +17,11 @@ import { ChartRepository } from '@repositories/chart-repository';
 import { CANDLE_COUNTS, PREFETCH_THRESHOLD, RANGE_IDLE_DELAY } from '@core/constants/candle-counts';
 import { HelperService } from '@core/services/helper-service';
 import { ChartDataResponse, ChartRangeResponse } from '@models/responses';
-import { SeriesType } from '@core/constants/enums';
 import { ChartService } from '@services/chart-service';
-import { ChartLegends } from '../chart-legends/chart-legends';
 import { LegendService } from '@services/legend-service';
+import { ChartLegends } from '@components/chart-legends/chart-legends';
 import { AppStore } from '@state/app-store';
+import { SeriesName } from '@models/dto';
 
 @Component({
   selector: 'app-chart-container',
@@ -188,13 +188,12 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
     const indicatorSeriesRequest: Record<string, any> = {};
     this.appStore.series.series$().series.forEach((s) => {
       switch (s.type) {
-        case SeriesType.CANDLE:
-        case SeriesType.HeikinAshi:
+        case 'Candlestick':
           return;
-        case SeriesType.EMA:
-        case SeriesType.ST:
-          indicatorSeriesRequest[s.name] = { [s.id]: s.params };
-          break;
+        // case 'EMA':
+        // case 'ST':
+        //   indicatorSeriesRequest[s.name] = { [s.id]: s.params };
+        //   break;
         default:
           indicatorSeriesRequest[s.name] = s.params;
           break;
@@ -225,17 +224,16 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
   #handleChartData(data: ChartDataResponse, isForwardLoading: boolean = false) {
     const chartData = this.chartService.formatChartData(data);
 
-    const indicatorDataMap: Partial<Record<SeriesType, unknown[]>> = {
-      [SeriesType.MACD]: chartData.macd,
-      [SeriesType.VOLUME]: chartData.volume,
+    const indicatorDataMap: Partial<Record<SeriesName, unknown[]>> = {
+      ['MACD']: chartData.macd,
+      ['Volume']: chartData.volume,
     };
 
     this.appStore.series.series$().series.forEach((s) => {
       if (!s.api) return;
 
-      switch (s.type) {
-        case SeriesType.CANDLE:
-        case SeriesType.HeikinAshi:
+      switch (s.name) {
+        case 'Candlestick':
           this.#updateSeriesData(s.api, chartData.candles, isForwardLoading);
           const updatedData = s.api.data();
           this.totalCandles.set(updatedData.length);
@@ -256,7 +254,7 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
         // }
 
         default: {
-          const indicatorData = indicatorDataMap[s.type];
+          const indicatorData = indicatorDataMap[s.name];
           if (indicatorData) this.#updateSeriesData(s.api, indicatorData, isForwardLoading);
           break;
         }
@@ -282,14 +280,13 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
   #addSerieses() {
     const mainChartPane = this.appStore.series
       .series$()
-      .series.find((s) => s.type === SeriesType.CANDLE || s.type === SeriesType.HeikinAshi)?.pane;
+      .series.find((s) => s.type === 'Candlestick')?.pane;
 
     this.appStore.series.series$().series.forEach((s) => {
-      const seriesType = this.helperService.getSeriesType(s.type);
-      const isCustomSeries = this.helperService.isCustomSeries(s.name);
+      const seriesDefination = this.helperService.getSeriesType(s.type);
 
       switch (s.type) {
-        case SeriesType.VOLUME:
+        case 'Volume':
           if (s.pane === mainChartPane) {
             s.options = {
               ...s.options,
@@ -302,10 +299,11 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
           break;
       }
 
-      const seriesApi = this.#addSeries(seriesType, s.options, s.pane, isCustomSeries);
+      const seriesApi = this.#addSeries(seriesDefination, s.options, s.pane);
       s.api = seriesApi;
+      s.liveOptions.set(seriesApi?.options());
 
-      if (s.type === SeriesType.VOLUME) {
+      if (s.type === 'Volume') {
         seriesApi?.priceScale().applyOptions({
           scaleMargins: {
             top: s.pane === mainChartPane ? 0.8 : 0.1,
@@ -316,11 +314,11 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
     });
   }
 
-  #addSeries(seriesType: any, options: any, pane: number, isCustom: boolean) {
-    if (isCustom) {
-      return this.#chartApi?.addCustomSeries(new (seriesType as any)(), options, pane);
+  #addSeries(seriesDefination: any, options: any, pane: number) {
+    if (seriesDefination.isCustom) {
+      return this.#chartApi?.addCustomSeries(seriesDefination.series, options, pane);
     }
-    return this.#chartApi?.addSeries(seriesType as any, options, pane);
+    return this.#chartApi?.addSeries(seriesDefination.series, options, pane);
   }
 
   #updateLegends() {
@@ -340,9 +338,7 @@ export class ChartContainer implements AfterViewInit, OnDestroy {
 
     this.#previousRange = range;
 
-    const candleData = this.appStore.series
-      .series$()
-      .series.find((s) => s.type === SeriesType.CANDLE || s.type === SeriesType.HeikinAshi);
+    const candleData = this.appStore.series.series$().series.find((s) => s.type === 'Candlestick');
     const firstCandleTime = candleData?.api?.data()[0].time;
     const lastCandleTime = candleData?.api?.data()[candleData?.api?.data().length - 1].time;
     const chartRange = this.appStore.chart.range$();

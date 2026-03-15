@@ -1,15 +1,17 @@
 import { signal, WritableSignal } from '@angular/core';
-import { SeriesType } from '@core/constants/enums';
+import { LegendModel, SeriesName } from '@models/dto';
+import { SeriesType } from 'lightweight-charts';
 
 export interface SeriesModel {
   id: number;
-  name: string;
+  name: SeriesName;
   type: SeriesType;
   api?: any;
   pane: number;
   params?: any;
   options?: any;
-  value: WritableSignal<object>;
+  liveOptions: WritableSignal<any>;
+  legend: WritableSignal<LegendModel | null>;
 }
 
 export interface SeriesState {
@@ -20,8 +22,8 @@ export const DEFAULT_SERIES: SeriesState = {
   series: [
     {
       id: 1,
-      name: 'Candle',
-      type: SeriesType.CANDLE,
+      name: 'Candlestick',
+      type: 'Candlestick',
       pane: 0,
       options: {
         upColor: '#00d4aa',
@@ -31,25 +33,27 @@ export const DEFAULT_SERIES: SeriesState = {
         wickUpColor: '#00d4aa',
         wickDownColor: '#ff4757',
       },
-      value: signal({}),
+      liveOptions: signal({}),
+      legend: signal(null),
     },
     {
       id: 2,
       name: 'Volume',
-      type: SeriesType.VOLUME,
+      type: 'Volume',
       pane: 1,
       options: {
         priceFormat: {
           type: 'volume',
         },
       },
+      liveOptions: signal({}),
       params: {},
-      value: signal({}),
+      legend: signal(null),
     },
     {
       id: 3,
       name: 'MACD',
-      type: SeriesType.MACD,
+      type: 'MACD',
       pane: 2,
       options: {
         macdLineColor: '#2962FF',
@@ -57,12 +61,13 @@ export const DEFAULT_SERIES: SeriesState = {
         histogramUpColor: '#00d4aa',
         histogramDownColor: '#ff4757',
       },
+      liveOptions: signal({}),
       params: {
         fastPeriods: 12,
         signalPeriods: 9,
         slowPeriods: 26,
       },
-      value: signal({}),
+      legend: signal(null),
     },
   ],
 };

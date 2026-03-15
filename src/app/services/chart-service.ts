@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HelperService } from '@core/services/helper-service';
-import { CandleModel } from '@models/dto';
+import { CandleModel } from '@models/dto/indicator-models';
 import { FormattedChartData } from '@models/dto/formated-chart-data-model';
 import {
   FormattedMacdData,

@@ -19,6 +19,7 @@ export const CHART_OPTIONS: DeepPartial<TimeChartOptions> = {
     shiftVisibleRangeOnNewBar: false,
     allowShiftVisibleRangeOnWhitespaceReplacement: false,
     minBarSpacing: 5,
+    enableConflation: true,
   },
   handleScroll: {
     mouseWheel: true,
@@ -26,4 +27,5 @@ export const CHART_OPTIONS: DeepPartial<TimeChartOptions> = {
     horzTouchDrag: false,
   },
   handleScale: { mouseWheel: true, pinch: true },
+  autoSize: true,
 };

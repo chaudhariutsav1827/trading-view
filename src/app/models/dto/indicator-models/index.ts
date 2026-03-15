@@ -10,3 +10,4 @@ export * from './st-model';
 export * from './volume-model';
 export * from './vwap-model';
 export * from './wt-model';
+export * from './candle-model';
